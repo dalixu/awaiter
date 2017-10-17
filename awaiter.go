@@ -1,3 +1,6 @@
+/*
+Package awaiter 模拟C#的Task 不需要直接使用go func
+*/
 package awaiter
 
 import (
