@@ -48,3 +48,8 @@ func (lp *Looper) Exit() error {
 	_, err := lp.awaiter.Cancel().Await()
 	return err
 }
+
+//IsCancellationRequested 是否取消
+func (lp *Looper) IsCancellationRequested() bool {
+	return lp.awaiter.IsCancellationRequested()
+}
