@@ -5,7 +5,6 @@ package awaiter
 
 import (
 	"fmt"
-	"runtime"
 	"sync"
 )
 
@@ -171,13 +170,28 @@ func WhenAny(aw ...Awaiter) Awaiter {
 	parent := &CollectionAwaiter{CommonAwaiter: newCommonAwaiter(), children: aw}
 	parent.async(func(aw Awaiter, arg ...interface{}) (interface{}, error) {
 		aws := arg[0].([]Awaiter)
-		for {
-			for _, a := range aws {
-				if a.IsFinished() {
-					return a, nil
-				}
-			}
-			runtime.Gosched()
+		if len(aws) == 0 {
+			return nil, nil
+		}
+		// for {
+		// 	for _, a := range aws {
+		// 		if a.IsFinished() {
+		// 			return a, nil
+		// 		}
+		// 	}
+		// 	runtime.Gosched()//容易产生CPU占用率过高
+		// }
+		chans := make(chan Awaiter, len(aws))
+		for _, a := range aws {
+			current := a
+			go func() {
+				current.Await()
+				chans <- current
+			}()
+		}
+		select {
+		case a := <-chans:
+			return a, nil
 		}
 	}, parent.children)
 
