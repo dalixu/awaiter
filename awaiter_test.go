@@ -356,3 +356,23 @@ func TestAwaiterWhenAllWithCancel(t *testing.T) {
 		}
 	}
 }
+
+func TestAwaiterDelay(t *testing.T) {
+	now := time.Now()
+	Delay(1 * time.Second).Await()
+	if (time.Now().Sub(now)) < time.Second {
+		t.Error("TestAwaiterDelay fail")
+	}
+}
+
+func TestAwaiterDelayCancel(t *testing.T) {
+	now := time.Now()
+	aw := Delay(2 * time.Second)
+	select {
+	case <-time.After(500 * time.Millisecond):
+		aw.Cancel().Await()
+	}
+	if (time.Now().Sub(now)) >= time.Second {
+		t.Error("TestAwaiterDelayCancel fail")
+	}
+}

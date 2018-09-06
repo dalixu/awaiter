@@ -6,6 +6,7 @@ package awaiter
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 //Awaiter Awaiter接口
@@ -28,6 +29,18 @@ type ContinueDo func(aw Awaiter, prev Awaiter, arg ...interface{}) (interface{},
 //New 返回Awaiter
 func New(do Do, arg ...interface{}) Awaiter {
 	return newCommonAwaiter().async(do, arg...)
+}
+
+//Delay 延时处理 支持撤销 内部使用的time.After
+func Delay(d time.Duration) Awaiter {
+	tc := time.After(d)
+	return newCommonAwaiter().async(func(aw Awaiter, arg ...interface{}) (interface{}, error) {
+		select {
+		case <-arg[0].(<-chan time.Time):
+		case <-aw.CancelWaiter():
+		}
+		return nil, nil
+	}, tc)
 }
 
 //CommonAwaiter 通用的Awaiter封装goroutine以便能够简单的返回值
