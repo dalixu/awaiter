@@ -31,14 +31,25 @@ func New(do Do, arg ...interface{}) Awaiter {
 	return newCommonAwaiter().async(do, arg...)
 }
 
-//Delay 延时处理 支持撤销 内部使用的time.After
+//Delay 延时处理 支持撤销 内部使用的time.After d为0 则无限等待
 func Delay(d time.Duration) Awaiter {
-	tc := time.After(d)
+	var tc *time.Timer
+	if d != 0 {
+		tc = time.NewTimer(d)
+	}
 	return newCommonAwaiter().async(func(aw Awaiter, arg ...interface{}) (interface{}, error) {
-		select {
-		case <-arg[0].(<-chan time.Time):
-		case <-aw.CancelWaiter():
+		if tc != nil {
+			select {
+			case <-arg[0].(*time.Timer).C:
+			case <-aw.CancelWaiter():
+				arg[0].(*time.Timer).Stop() //及时回收Timer
+			}
+		} else {
+			select {
+			case <-aw.CancelWaiter():
+			}
 		}
+
 		return nil, nil
 	}, tc)
 }
