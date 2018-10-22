@@ -377,13 +377,13 @@ func TestAwaiterDelayCancel(t *testing.T) {
 	}
 }
 
-func TestAwaiterDelayInfine(t *testing.T) {
+func TestAwaiterDelayInfinite(t *testing.T) {
 	aw := Delay(0)
 
 	select {
 	case <-time.After(500 * time.Millisecond):
 		if aw.IsFinished() {
-			t.Error("TestAwaiterDelayInfine fail")
+			t.Error("TestAwaiterDelayInfinite fail")
 		} else {
 			aw.Cancel().Await()
 		}
