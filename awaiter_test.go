@@ -378,7 +378,7 @@ func TestAwaiterDelayCancel(t *testing.T) {
 }
 
 func TestAwaiterDelayInfinite(t *testing.T) {
-	aw := Delay(0)
+	aw := Delay(InfiniteDuration)
 
 	select {
 	case <-time.After(500 * time.Millisecond):

@@ -31,10 +31,15 @@ func New(do Do, arg ...interface{}) Awaiter {
 	return newCommonAwaiter().async(do, arg...)
 }
 
-//Delay 延时处理 支持撤销 内部使用的time.After d为0 则无限等待
+//InfiniteDuration 无限等待的时间
+const (
+	InfiniteDuration time.Duration = 1<<63 - 1
+)
+
+//Delay 延时处理 支持撤销 内部使用的time.After d为InfiniteDuration 则无限等待
 func Delay(d time.Duration) Awaiter {
 	var tc *time.Timer
-	if d != 0 {
+	if d != InfiniteDuration {
 		tc = time.NewTimer(d)
 	}
 	return newCommonAwaiter().async(func(aw Awaiter, arg ...interface{}) (interface{}, error) {
